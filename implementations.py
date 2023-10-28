@@ -13,8 +13,13 @@ def compute_gradient_mse(y, tx, w):
 
 
 def sigmoid(t):
-    """
-    simple sigmoid function
+    """apply sigmoid function on t.
+
+    Args:
+        t: scalar or numpy array
+
+    Returns:
+        scalar or numpy array
     """
     return 1.0 / (1 + np.exp(-t))
 
@@ -59,12 +64,20 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """
     calculate logistic regression loss
     """
-    w = initial_w
-    for _ in range(max_iters):
-        gradient = compute_gradient_logistic(y, tx, w)
-        w = w - gamma * gradient
-    loss = np.mean(y * np.log(sigmoid(tx @ w)) + (1 - y) * np.log(1 - sigmoid(tx @ w)))
-    return w, -loss
+    # compute the predicted probabilities
+    pred = 1.0 / (1.0 + np.exp(-tx.dot(w)))
+
+    # compute the logistic regression loss
+    loss = -np.sum(y * np.log(pred) + (1 - y) * np.log(1 - pred))
+
+    # compute the gradient of the loss
+    gradient = tx.T.dot(pred - y)
+
+    # compute the hessian matrix of the loss
+    S = np.diag((pred * (1 - pred)).ravel())
+    hessian = tx.T.dot(S).dot(tx)
+
+    return loss, gradient
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -80,9 +93,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 
 def least_squares(y, tx):
-    """
-    Calculates the least squares solution using normal equations.
-    """
+    """calculate the least squares."""
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)
     e = y - tx @ w
     loss = 0.5 * np.mean(e**2)
@@ -91,15 +102,22 @@ def least_squares(y, tx):
 
 
 def ridge_regression(y, tx, lambda_):
-    """
-    Calculates the ridge regression solution using normal equations.
+    """implement ridge regression.
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        lambda_: scalar.
+
+    Returns:
+        w: optimal weights, numpy array of shape(D,), D is the number of features.
     """
 
-    aI = lambda_ * np.eye(tx.shape[1])
+    aI = 2 * tx.shape[0] * lambda_ * np.eye(tx.shape[1])
     a = tx.T @ tx + aI
     b = tx.T @ y
-    w, _, _, _ = np.linalg.lstsq(a, b, rcond=None)
+    w = np.linalg.solve(a, b)
+
     e = y - tx @ w
     loss = 0.5 * np.mean(e**2)
-
     return w, loss
