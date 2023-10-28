@@ -6,6 +6,7 @@ def compute_gradient_mse(y, tx, w):
     Compute the gradient for mean squared error.
     """
     y = y.reshape(-1, 1)
+    w = w.reshape(-1, 1)
     e = y - tx @ w
     gradient = -tx.T @ e / len(y)
     return gradient
@@ -22,6 +23,8 @@ def compute_gradient_logistic(y, tx, w):
     """
     Compute the gradient for logistic regression.
     """
+    y = y.reshape(-1, 1)
+    w = w.reshape(-1, 1)
     prediction = sigmoid(tx @ w)
     gradient = tx.T @ (prediction - y) / len(y)
     return gradient
@@ -92,9 +95,10 @@ def ridge_regression(y, tx, lambda_):
     Calculates the ridge regression solution using normal equations.
     """
 
-    a = tx.T @ tx + lambda_ * np.eye(tx.shape[1])
+    aI = lambda_ * np.eye(tx.shape[1])
+    a = tx.T @ tx + aI
     b = tx.T @ y
-    w = np.linalg.solve(a, b)
+    w, _, _, _ = np.linalg.lstsq(a, b, rcond=None)
     e = y - tx @ w
     loss = 0.5 * np.mean(e**2)
 
