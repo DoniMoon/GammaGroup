@@ -84,7 +84,7 @@ def least_squares(y, tx):
     """calculate the least squares."""
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)
     e = y - tx @ w
-    loss = 0.5 * np.mean(e**2)
+    loss = 0.5 * np.mean(e ** 2)
 
     return w, loss
 
@@ -107,5 +107,5 @@ def ridge_regression(y, tx, lambda_):
     w = np.linalg.solve(a, b)
 
     e = y - tx @ w
-    loss = 0.5 * np.mean(e**2)
+    loss = 0.5 * np.mean(e ** 2)
     return w, loss
