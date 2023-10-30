@@ -53,7 +53,7 @@ def compute_gradient_mse(y, tx, w):
     Compute the gradient for mean squared error.
     """
     e = y - tx.dot(w)
-    gradient = -tx.T.dot(e) / len(e)
+    gradient = -tx.T.dot(e) / len(y)
     return gradient
 
 def compute_loss_mae(err):
@@ -79,7 +79,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     for _ in range(max_iters):
         gradient = compute_gradient_mse(y, tx, w)
         w = w - gamma * gradient
-    loss = 1 / 2 * np.mean(y - tx.dot(w)**2)
+    loss = 1 / 2 * np.mean((y - tx.dot(w))**2)
     return w, loss
 
 
@@ -92,7 +92,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         i = np.random.randint(0, len(y))
         gradient = compute_gradient_mse(y[i : i + 1], tx[i : i + 1], w)
         w = w - gamma * gradient
-    loss = 1 / 2 * np.mean(y - tx.dot(w)**2)
+    loss = 1 / 2 * np.mean((y - tx.dot(w))**2)
     return w, loss
 
 def mean_absolute_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -115,7 +115,7 @@ def mean_absolute_error_sgd(y, tx, initial_w, max_iters, gamma):
     for _ in range(max_iters):
         i = np.random.randint(0, len(y))
         grad, err = compute_subgradient_mae(y[i : i + 1], tx[i : i + 1], w)
-        w = w - gamma * gradient
+        w = w - gamma * grad
     loss = np.mean(np.abs(y - tx.dot(w)))
     return w, loss
 
