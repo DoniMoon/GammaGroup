@@ -10,3 +10,4 @@ Files description:
   - _implementations.py contains all our functions implementations
   - _run.py is the python script to generate our best attempt file
   - Compare_preprocessing_options.ipynb is the code used for conducting preprocessing option comparison experiment
+  - Report.pdf is our final report file. Since we are failed to upload our file to submission page, we will be very appreciate if you consider this version.
