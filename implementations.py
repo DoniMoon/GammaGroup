@@ -6,28 +6,32 @@ def remove_empty_columns(x_train, x_test, threshold):
     Remove columns who contain more than threshold% NaN values
     """
     is_nan_arr = np.isnan(x_train)
-    #percentage of missing values
+    # percentage of missing values
     missing_percentage = np.mean(is_nan_arr, axis=0)
-    #threshold of NaN values
-    #columns to keep
+    # threshold of NaN values
+    # columns to keep
     to_keep = missing_percentage < threshold
     return x_train[:, to_keep], x_test[:, to_keep]
 
 
-def standardize_data (x_train, x_test):
+def standardize_data(x_train, x_test):
     x_train_array = x_train.copy()
     for col_idx in range(x_train_array.shape[1]):
-        unique_values = np.unique(x_train_array[~np.isnan(x_train_array[:, col_idx]), col_idx])
+        unique_values = np.unique(
+            x_train_array[~np.isnan(x_train_array[:, col_idx]), col_idx]
+        )
         if len(unique_values) == 1 and 1 in unique_values:
             x_train_array[np.isnan(x_train_array[:, col_idx]), col_idx] = 0
     x_test_array = x_test.copy()
     for col_idx in range(x_test_array.shape[1]):
-        unique_values = np.unique(x_test_array[~np.isnan(x_test_array[:, col_idx]), col_idx])
+        unique_values = np.unique(
+            x_test_array[~np.isnan(x_test_array[:, col_idx]), col_idx]
+        )
         if len(unique_values) == 1 and 1 in unique_values:
             x_test_array[np.isnan(x_test_array[:, col_idx]), col_idx] = 0
 
-    mean_x_train = np.nanmean(x_train_array, axis = 0)
-    std_x_train = np.nanstd(x_train_array, axis = 0)
+    mean_x_train = np.nanmean(x_train_array, axis=0)
+    std_x_train = np.nanstd(x_train_array, axis=0)
     std_x_train += 1e-10
     x_train_standardized = (x_train_array - mean_x_train) / std_x_train
     x_train_standardized[np.isnan(x_train_standardized)] = 0
@@ -56,6 +60,7 @@ def compute_gradient_mse(y, tx, w):
     gradient = -tx.T.dot(e) / len(y)
     return gradient
 
+
 def compute_loss_mae(err):
     """
     Compute the loss for mean absolute error.
@@ -71,6 +76,7 @@ def compute_subgradient_mae(y, tx, w):
     grad = -np.dot(tx.T, np.sign(err)) / len(err)
     return grad, err
 
+
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """
     Calculate MSE for GD
@@ -79,7 +85,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     for _ in range(max_iters):
         gradient = compute_gradient_mse(y, tx, w)
         w = w - gamma * gradient
-    loss = 1 / 2 * np.mean((y - tx.dot(w))**2)
+    loss = 1 / 2 * np.mean((y - tx.dot(w)) ** 2)
     return w, loss
 
 
@@ -92,8 +98,9 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         i = np.random.randint(0, len(y))
         gradient = compute_gradient_mse(y[i : i + 1], tx[i : i + 1], w)
         w = w - gamma * gradient
-    loss = 1 / 2 * np.mean((y - tx.dot(w))**2)
+    loss = 1 / 2 * np.mean((y - tx.dot(w)) ** 2)
     return w, loss
+
 
 def mean_absolute_error_gd(y, tx, initial_w, max_iters, gamma):
     """
@@ -183,19 +190,25 @@ def ridge_regression(y, tx, lambda_):
     loss = 0.5 * np.mean(e ** 2)
     return w, loss
 
-def compute_f1_score(true_labels, predictions) :
+
+def compute_f1_score(true_labels, predictions):
     """
     Compute the F1 score based on true labels and predictions.
     """
     TP = np.sum((predictions == 1) & (true_labels == 1))
     FP = np.sum((predictions == 1) & (true_labels == -1))
     FN = np.sum((predictions == -1) & (true_labels == 1))
-    
+
     precision = TP / (TP + FP) if TP + FP != 0 else 0
     recall = TP / (TP + FN) if TP + FN != 0 else 0
-    
-    f1_score = (2 * precision * recall) / (precision + recall) if precision + recall != 0 else 0
+
+    f1_score = (
+        (2 * precision * recall) / (precision + recall)
+        if precision + recall != 0
+        else 0
+    )
     return f1_score
+
 
 def train_test_split(y, tx):
     """
