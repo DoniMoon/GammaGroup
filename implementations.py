@@ -1,6 +1,41 @@
 import numpy as np
 
 
+def remove_empty_columns(x_train, x_test, threshold):
+    """
+    Remove columns who contain more than threshold% NaN values
+    """
+    is_nan_arr = np.isnan(x_train)
+    #percentage of missing values
+    missing_percentage = np.mean(is_nan_arr, axis=0)
+    #threshold of NaN values
+    #columns to keep
+    to_keep = missing_percentage < threshold
+    return x_train[:, to_keep], x_test[:, to_keep]
+
+
+def standardize_data (x_train, x_test):
+    x_train_array = x_train.copy()
+    for col_idx in range(x_train_array.shape[1]):
+        unique_values = np.unique(x_train_array[~np.isnan(x_train_array[:, col_idx]), col_idx])
+        if len(unique_values) == 1 and 1 in unique_values:
+            x_train_array[np.isnan(x_train_array[:, col_idx]), col_idx] = 0
+    x_test_array = x_test.copy()
+    for col_idx in range(x_test_array.shape[1]):
+        unique_values = np.unique(x_test_array[~np.isnan(x_test_array[:, col_idx]), col_idx])
+        if len(unique_values) == 1 and 1 in unique_values:
+            x_test_array[np.isnan(x_test_array[:, col_idx]), col_idx] = 0
+
+    mean_x_train = np.nanmean(x_train_array, axis = 0)
+    std_x_train = np.nanstd(x_train_array, axis = 0)
+    std_x_train += 1e-10
+    x_train_standardized = (x_train_array - mean_x_train) / std_x_train
+    x_train_standardized[np.isnan(x_train_standardized)] = 0
+    x_test_standardized = (x_test_array - mean_x_train) / std_x_train
+    x_test_standardized[np.isnan(x_test_standardized)] = 0
+    return x_train_standardized, x_test_standardized
+
+
 def sigmoid(t):
     """apply sigmoid function on t.
 
