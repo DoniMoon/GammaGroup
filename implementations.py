@@ -52,10 +52,24 @@ def compute_gradient_mse(y, tx, w):
     """
     Compute the gradient for mean squared error.
     """
-    e = y - tx @ w
-    gradient = -tx.T @ e / len(y)
+    e = y - tx.dot(w)
+    gradient = -tx.T.dot(e) / len(e)
     return gradient
 
+def compute_loss_mae(err):
+    """
+    Compute the loss for mean absolute error.
+    """
+    return np.mean(np.abs(err))
+
+
+def compute_subgradient_mae(y, tx, w):
+    """
+    Compute the gradient for mean squared error.
+    """
+    err = y - tx.dot(w)
+    grad = -np.dot(tx.T, np.sign(err)) / len(err)
+    return grad, err
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """
@@ -65,7 +79,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     for _ in range(max_iters):
         gradient = compute_gradient_mse(y, tx, w)
         w = w - gamma * gradient
-    loss = 0.5 * np.mean((y - tx @ w) ** 2)
+    loss = 1 / 2 * np.mean(y - tx.dot(w)**2)
     return w, loss
 
 
@@ -78,7 +92,31 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         i = np.random.randint(0, len(y))
         gradient = compute_gradient_mse(y[i : i + 1], tx[i : i + 1], w)
         w = w - gamma * gradient
-    loss = 0.5 * np.mean((y - tx @ w) ** 2)
+    loss = 1 / 2 * np.mean(y - tx.dot(w)**2)
+    return w, loss
+
+def mean_absolute_error_gd(y, tx, initial_w, max_iters, gamma):
+    """
+    Calculate MAE for GD
+    """
+    w = initial_w
+    for n_iter in range(max_iters):
+        grad, err = compute_subgradient_mae(y, tx, w)
+        w = w - gamma * grad
+    loss = compute_loss_mae(err)
+    return w, loss
+
+
+def mean_absolute_error_sgd(y, tx, initial_w, max_iters, gamma):
+    """
+    Calculate MAE for SGD
+    """
+    w = initial_w
+    for _ in range(max_iters):
+        i = np.random.randint(0, len(y))
+        grad, err = compute_subgradient_mae(y[i : i + 1], tx[i : i + 1], w)
+        w = w - gamma * gradient
+    loss = np.mean(np.abs(y - tx.dot(w)))
     return w, loss
 
 
@@ -144,3 +182,34 @@ def ridge_regression(y, tx, lambda_):
     e = y - tx @ w
     loss = 0.5 * np.mean(e ** 2)
     return w, loss
+
+def compute_f1_score(true_labels, predictions) :
+    """
+    Compute the F1 score based on true labels and predictions.
+    """
+    TP = np.sum((predictions == 1) & (true_labels == 1))
+    FP = np.sum((predictions == 1) & (true_labels == -1))
+    FN = np.sum((predictions == -1) & (true_labels == 1))
+    
+    precision = TP / (TP + FP) if TP + FP != 0 else 0
+    recall = TP / (TP + FN) if TP + FN != 0 else 0
+    
+    f1_score = (2 * precision * recall) / (precision + recall) if precision + recall != 0 else 0
+    return f1_score
+
+def train_test_split(y, tx):
+    """
+    Splits the dataset into training and test sets.
+    """
+    test_ratio = 0.2
+    shuffled_indices = np.random.permutation(tx.shape[0])
+
+    test_size = int(test_ratio * tx.shape[0])
+    test_indices = shuffled_indices[:test_size]
+    train_indices = shuffled_indices[test_size:]
+
+    x_train = tx[train_indices]
+    y_train = y[train_indices]
+    x_test = tx[test_indices]
+    y_test = y[test_indices]
+    return x_train, y_train, x_test, y_test
